@@ -2,7 +2,7 @@ import React, { useState }from 'react';
 import { KeyboardAvoidingView, Platform, ScrollView, View } from 'react-native';
 import Toast from 'react-native-toast-message';
 import uuid from 'react-native-uuid';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage, { useAsyncStorage } from '@react-native-async-storage/async-storage';
 import { styles } from './styles';
 
 import { Input } from '../../components/Input';
@@ -14,6 +14,8 @@ export function Form() {
   const [user, setUser] = useState('');
   const [password, setPassword] = useState('');
 
+  const { getItem, setItem } = useAsyncStorage("@savePass:passwords");
+
   async function handleNew() {
     try {
       const id = uuid.v4();
@@ -23,7 +25,15 @@ export function Form() {
         user,
         password
       }
-      await AsyncStorage.setItem("@savePass:passwords", JSON.stringify(newData));
+      //const response = await AsyncStorage.getItem("@savePass:passwords");
+      const response = await getItem();
+
+      const previusData = response ? JSON.parse(response) : [];
+
+      const data = [...previusData, newData]
+
+      //await AsyncStorage.setItem("@savePass:passwords", JSON.stringify(data));
+      await setItem(JSON.stringify(data));
       console.log(newData);
       Toast.show({type: 'success', text1: 'Cadastrado com sucesso'})
     } catch(error) {
